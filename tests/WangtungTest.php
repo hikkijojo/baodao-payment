@@ -8,7 +8,7 @@ use Baodao\Payment\PaymentConnection;
 use DateTime;
 use PHPUnit\Framework\TestCase;
 
-class WantungPaymentTest extends TestCase
+class WantungTest extends TestCase
 {
     private $connection;
     private $payment;
@@ -32,7 +32,18 @@ class WantungPaymentTest extends TestCase
         self::assertJson($actual['fields']);
     }
 
-    public function test_md5_payment()
+    public function test_notify()
+    {
+        $json = '{"transdata":"%7B%22pay_type%22%3A%2210072%22%2C%22user_no%22%3A%22Neo%22%2C%22product_name%22%3A%22pidai%22%2C%22product_code%22%3A%22product-123%22%2C%22order_no%22%3A%221507704879000%22%2C%22order_time%22%3A%222017-10-12T12%3A22%3A05.452Z%22%2C%22order_amount%22%3A0.1%2C%22payment%22%3A%22%E6%94%AF%E4%BB%98%E6%88%90%E5%8A%9F%22%7D", "sign":"RLiujUr8AHm7V%2BNfPmdzkZgFuwiluyxJJNkso9nep3YY2wCO4lCh444Nk%2Fr1SxN2CxmpJ333DuaZfNPsBd647Q%2FYpH89fIYz3A07H7NE8EWN008FNBwDhBr6N3hyisJMNdwsJof7D3tCTtc28adOlC5k1naToseOP3x38H%2Fe5Vg%3D" }';
+        $response = json_decode($json, true);
+        $paymentNotify = $this->payment->notify($response);
+        self::assertEquals($paymentNotify->code, 200);
+        self::assertNotEmpty($paymentNotify->orderNo);
+        self::assertNotEmpty($paymentNotify->message);
+        self::assertTrue($paymentNotify->orderAmount > 0 );
+    }
+
+    public function test_md5_create()
     {
         $actual = $this->payment->prepareBody();
         $transdata = '%7B%22appno_no%22%3A%22test1234%22%2C%22merchant_code%22%3A%22test1111%22%2C%22order_no%22%3A%22order123456%22%2C%22order_amount%22%3A%2250%22%2C%22order_time%22%3A%2220200201154559%22%2C%22product_name%22%3A%2210.0%22%2C%22product_code%22%3A%221%22%2C%22user_no%22%3A%2251070173%22%2C%22notify_url%22%3A%22https%3A%2F%2Fdev.33tech.cc%2Fv1%2Fpaid%2Fwangtung%22%2C%22pay_type%22%3A%22weixin-h5%22%2C%22bank_code%22%3A%22%22%2C%22return_url%22%3A%22https%3A%2F%2Fdev.33tech.cc%2Fmember%22%2C%22merchant_ip%22%3A%2236.203.104.105%22%2C%22bank_card%22%3A%22%22%7D';
@@ -42,7 +53,7 @@ class WantungPaymentTest extends TestCase
         self::assertEquals('MD5', $actual['signtype']);
     }
 
-    public function test_md5_payment_weishin_h5()
+    public function test_md5_create_payment_weishin_h5()
     {
         $now = new DateTime();
         $this->connection->orderNo = 'order' . rand(0, 9) . $now->format('Ymdhis');
@@ -52,7 +63,7 @@ class WantungPaymentTest extends TestCase
         self::assertNotEmpty($result->url);
     }
 
-    public function test_md5_payment_alipay()
+    public function test_md5_create_payment_alipay()
     {
         $now = new DateTime();
         $this->connection->orderNo = 'order' . rand(0, 9) . $now->format('Ymdhis');

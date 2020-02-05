@@ -8,7 +8,6 @@ use Baodao\Payment\PaymentConnection;
 use Baodao\Payment\PaymentCreation;
 use Baodao\Payment\PaymentNotify;
 use GuzzleHttp\Client;
-
 class Wantung implements PaymentInterface
 {
     const MD5 = 'MD5';
@@ -147,12 +146,22 @@ class Wantung implements PaymentInterface
     {
         if (isset($response['transdata']) && isset($response['sign'])) {
             $transData = urldecode($response['transdata']);
-            if ($this->checkMD5($transData, $response['sign'])) {
-                return $transData['order_no'];
+            if(false == is_array($transData)) {
+                $transData = json_decode($transData, true);
             }
-            throw new \Exception("Failed to check MD5 sign {$response['sign']}");
+            $sign = $response['sign'];
+            //$sign = urldecode($response['sign']);
+            //$sign = utf8_decode($sign);
+            if ($this->checkMD5($transData, $sign)) {
+                $result = new PaymentNotify();
+                $result->code = 200;
+                $result->message = $result['payment'];
+                $result->orderNo = $result['order_no'];
+                $result->orderAmount = $result['order_amount'];
+                return $result;
+            }
         }
-        throw new \Exception('Empty keys transdata and sign in response');
+        throw new \Exception("Failed to check MD5 from response ".print_r($response));
     }
 
     public function prepareBody()
