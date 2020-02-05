@@ -1,8 +1,8 @@
 <?php
 
-namespace Baodao\Payment;
+namespace Baodao\Payment\FourthParty;
 
-use Baodao\Payment\Enums\PaymentEnum;
+use Baodao\Payment\PaymentConfig;
 
 class Hengrun
 {
@@ -92,19 +92,17 @@ class Hengrun
             'is_jdpay' => 1,
             'is_ylpay' => 1,
             'fields' => json_encode([
-                'merchant' => PaymentEnum::MERCHANT,
-                'md5_key' => PaymentEnum::MD5,
-                'trade_code' => [
-                    'alipay' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_H5],
-                    'wechat' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_H5],
-                    'qqpay' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_H5],
-                    'gateway' => [],
-                    'ylpay' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_H5],
-                    'jdpay' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_H5],
+                                        'merchant' => PaymentConfig::MERCHANT,
+                                        'md5_key' => PaymentConfig::MD5,
+                                        'trade_code' => [
+                                            'alipay' => [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5],
+                                            'wechat' => [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5],
+                                            'qqpay' => [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5],
+                                            'gateway' => [],
+                                            'ylpay' => [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5],
+                                            'jdpay' => [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5],
                 ],
-            ]),
-            'created_at' => new \Datetime(),
-            'updated_at' => new \Datetime(),
+            ])
         ];
     }
 

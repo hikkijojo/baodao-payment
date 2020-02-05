@@ -1,6 +1,6 @@
 <?php
 
-namespace Baodao\Payment;
+namespace Baodao\Payment\FourthParty;
 
 use Exception;
 

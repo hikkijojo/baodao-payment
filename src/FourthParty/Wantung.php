@@ -205,16 +205,16 @@ class Wantung implements PaymentInterface
                  ->setFieldMd5Key()
                  //->setFieldRsa()
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_ALIPAY,
-                                     [PaymentConfig::TRADE_TYPE_H5, PaymentConfig::TRADE_TYPE_SCAN])
+                                     [PaymentConfig::TRADE_H5, PaymentConfig::TRADE_SCAN])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_WECHAT,
-                                     [PaymentConfig::TRADE_TYPE_H5, PaymentConfig::TRADE_TYPE_SCAN])
+                                     [PaymentConfig::TRADE_H5, PaymentConfig::TRADE_SCAN])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_QQ,
-                                     [PaymentConfig::TRADE_TYPE_SCAN])
+                                     [PaymentConfig::TRADE_SCAN])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_GATEWAY, [])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_YLPAY,
-                                     [ PaymentConfig::TRADE_TYPE_SCAN])
+                                     [ PaymentConfig::TRADE_SCAN])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_JDPAY,
-                                     [ PaymentConfig::TRADE_TYPE_SCAN]);
+                                     [ PaymentConfig::TRADE_SCAN]);
     }
 
     public function signMD5(array $paymentArr): string
@@ -249,14 +249,14 @@ class Wantung implements PaymentInterface
     private function getPayType($thirdPartyType, $tradeType)
     {
         if ($thirdPartyType == PaymentConfig::THIRD_PARTY_WECHAT) {
-            if ($tradeType == PaymentConfig::TRADE_TYPE_H5) {
+            if ($tradeType == PaymentConfig::TRADE_H5) {
                 return self::WEIXIN_H5;
             }
 
             return self::WEIXIN;
         }
         if ($thirdPartyType == PaymentConfig::THIRD_PARTY_ALIPAY) {
-            if ($tradeType == PaymentConfig::TRADE_TYPE_H5) {
+            if ($tradeType == PaymentConfig::TRADE_H5) {
                 return self::ZHIFUBAO_H5;
             }
 

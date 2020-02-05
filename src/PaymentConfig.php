@@ -12,10 +12,10 @@ class PaymentConfig
     const THIRD_PARTY_JDPAY = 'jdpay';       // QQ
     const THIRD_PARTY_YLPAY = 'ylpay';       //雲閃付
 
-    const TRADE_TYPES = [self::TRADE_TYPE_H5,
-                         self::TRADE_TYPE_SCAN]; // 京東
-    const TRADE_TYPE_SCAN = 'scan';              // 銀聯
-    const TRADE_TYPE_H5 = 'h5';
+    const TRADE_TYPES = [self::TRADE_H5,
+                         self::TRADE_SCAN]; // 京東
+    const TRADE_SCAN = 'scan';              // 銀聯
+    const TRADE_H5 = 'h5';
 
     const RSA_PUB = 'RSA 公钥';
     const RSA_PRI = 'RSA 私钥';

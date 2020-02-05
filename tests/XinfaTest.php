@@ -2,7 +2,7 @@
 
 namespace Baodao\Payment\Tests;
 
-use Baodao\Payment\Xinfa;
+use Baodao\Payment\FourthParty\Xinfa;
 use PHPUnit\Framework\TestCase;
 
 class XinfaTest extends TestCase

@@ -57,7 +57,7 @@ class WantungPaymentTest extends TestCase
         $now = new DateTime();
         $this->connection->orderNo = 'order' . rand(0, 9) . $now->format('Ymdhis');
         $this->connection->thirdPartyType = PaymentConfig::THIRD_PARTY_ALIPAY;
-        $this->connection->tradeType = PaymentConfig::TRADE_TYPE_H5;
+        $this->connection->tradeType = PaymentConfig::TRADE_H5;
         $this->connection->bankCode = 1;
         $this->payment->setConnection($this->connection);
         $result = $this->payment->create();
@@ -79,7 +79,7 @@ class WantungPaymentTest extends TestCase
                    'user_no'          => '51070173',
                    'merchant_ip'      => '36.203.104.105',
                    'third_party_type' => PaymentConfig::THIRD_PARTY_WECHAT,
-                   'trade_type'       => PaymentConfig::TRADE_TYPE_H5,
+                   'trade_type'       => PaymentConfig::TRADE_H5,
                    'notify_url'       => 'https://dev.33tech.cc/v1/paid/wangtung',
                    'redirect_url'     => 'https://dev.33tech.cc/member',
                    'host'             => 'https://www.wantong-pay.com',
