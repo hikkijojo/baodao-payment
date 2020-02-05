@@ -30,7 +30,7 @@ class Hengrun
             'totalAmount' => $inputs['amount'] * 100,
             'productTitle' => 'transaction',
             'notifyUrl' => $this->notifyUrl,
-            'tradeIP' => request()->ip(),
+            'tradeIP' => $inputs['tradeIp'],
         ];
         ksort($form);
 
@@ -39,7 +39,6 @@ class Hengrun
         $response = $this->curlPost([
             'ApplyParams' => json_encode($form, true),
         ]);
-
         if ('0000' === $response['stateCode']) {
             return [
                 'code' => 200,
@@ -115,7 +114,7 @@ class Hengrun
         return $sign == $this->encryptSign($data, $this->md5Key);
     }
 
-    private function encryptSign(array $params, string $key): string
+    public function encryptSign(array $params, string $key): string
     {
         return strtoupper(
             md5(
