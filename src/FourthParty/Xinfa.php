@@ -2,7 +2,9 @@
 
 namespace Baodao\Payment\FourthParty;
 
-use Baodao\Payment\Enums\PaymentEnum;
+use Baodao\Payment\PaymentConfig;
+use Baodao\Payment\PaymentCreation;
+use Baodao\Payment\PaymentNotify;
 use Exception;
 
 class Xinfa
@@ -46,9 +48,9 @@ class Xinfa
     /**
      * Send a new payment to Xinfa server and get the payment QR code.
      *
-     * @return array|bool
+     * @return PaymentCreation
      */
-    public function create()
+    public function create(): PaymentCreation
     {
         $this->checkProperties();
 
@@ -76,10 +78,10 @@ class Xinfa
         $verified = $this->verifyCreation($result, $this->md5Key);
 
         if (empty($verified['qrcodeUrl'])) {
-            return false;
+            throw new Exception('No payable URL.');
         }
 
-        return ['url' => $verified['qrcodeUrl'], 'html' => ''];
+        return new PaymentCreation($verified['qrcodeUrl']);
     }
 
     /**
@@ -87,9 +89,9 @@ class Xinfa
      *
      * @param array $request
      *
-     * @return array
+     * @return PaymentNotify
      */
-    public function notify(array $request): array
+    public function notify(array $request): PaymentNotify
     {
         if (isset($request['data'], $request['merchNo'], $request['orderNo'])) {
             $data = urldecode($request['data']);
@@ -104,61 +106,62 @@ class Xinfa
             */
 
             if ($verified['merchNo'] != $request['merchNo'] || $verified['orderNo'] != $request['orderNo']) {
-                return [
-                    'code' => 400,
-                    'order_no' => $verified['orderNo'],
-                    'message' => 'Inconsistent merchNo or orderNo.',
-                ];
+                $paymentNotify = new PaymentNotify();
+
+                $paymentNotify->code = 400;
+                $paymentNotify->message = 'Inconsistent merchNo or orderNo.';
+                $paymentNotify->orderNo = $request['orderNo'];
+
+                return $paymentNotify;
             }
 
-            return [
-                'code' => 200,
-                'order_no' => $verified['orderNo'],
-                'message' => 'SUCCESS',
-            ];
+            $paymentNotify->code = 400;
+            $paymentNotify->message = 'SUCCESS';
+            $paymentNotify->orderNo = $verified['orderNo'];
+
+            return $paymentNotify;
         }
 
-        return [
-            'code' => 500,
-            'order_no' => $verified['orderNo'],
-            'message' => 'Empty key data in request.',
-        ];
+        $paymentNotify->code = 500;
+        $paymentNotify->message = 'Empty key data in request.';
+        $paymentNotify->orderNo = $request['orderNo'];
+
+        return $paymentNotify;
     }
 
     /**
      * Get config for DB seeding.
      *
-     * @return array
+     * @return PaymentConfig
      */
-    public function getConfig(): array
+    public function getConfig(): PaymentConfig
     {
-        return [
-            'cn_name' => self::NAME,
-            'en_name' => strtolower(get_class()),
-            'is_alipay' => 1,
-            'is_wechat' => 1,
-            'is_gateway' => 0,
-            'is_qqpay' => 1,
-            'is_unionpay' => 1,
-            'is_jdpay' => 1,
-            'is_ylpay' => 1,
-            'fields' => json_encode([
-                'merchant' => PaymentEnum::MERCHANT,
-                'md5_key' => PaymentEnum::MD5,
-                'rsa_pub' => PaymentEnum::RSA_PUB,
-                'rsa_pri' => PaymentEnum::RSA_PRI,
-                'trade_code' => [
-                    'alipay' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_WAP],
-                    'wechat' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_WAP, PaymentEnum::TRADE_H5],
-                    'qqpay' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_WAP],
-                    'jdpay' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_WAP],
-                    'unionpay' => [PaymentEnum::TRADE_SCAN],
-                    'ylpay' => [PaymentEnum::TRADE_WAP],
-                ],
-            ]),
-            'created_at' => new \Datetime(),
-            'updated_at' => new \Datetime(),
-        ];
+        $c = new PaymentConfig();
+
+        return $c->setCnName(self::NAME)
+                 ->setEnName(strtolower(get_class()))
+                 ->setThirdParty([
+                     PaymentConfig::THIRD_PARTY_ALIPAY,
+                     PaymentConfig::THIRD_PARTY_WECHAT,
+                     PaymentConfig::THIRD_PARTY_QQ,
+                     PaymentConfig::THIRD_PARTY_UNIONPAY,
+                     PaymentConfig::THIRD_PARTY_YLPAY,
+                     PaymentConfig::THIRD_PARTY_JDPAY, ])
+                 ->setFieldMerchant()
+                 ->setFieldMd5Key()
+                 ->setFieldRsa()
+                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_ALIPAY,
+                                     [PaymentConfig::TRADE_WAP, PaymentConfig::TRADE_SCAN])
+                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_WECHAT,
+                                     [PaymentConfig::TRADE_WAP, PaymentConfig::TRADE_H5, PaymentConfig::TRADE_SCAN])
+                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_QQ,
+                                     [PaymentConfig::TRADE_WAP, PaymentConfig::TRADE_SCAN])
+                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_JDPAY,
+                                     [PaymentConfig::TRADE_WAP, PaymentConfig::TRADE_SCAN])
+                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_UNIONPAY,
+                                     [PaymentConfig::TRADE_SCAN])
+                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_YLPAY,
+                                     [PaymentConfig::TRADE_WAP]);
     }
 
     /**
