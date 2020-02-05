@@ -3,7 +3,6 @@
 namespace Baodao\Payment;
 
 use Exception;
-use Illuminate\Support\Facades\Validator;
 
 class Xinfa
 {
@@ -43,6 +42,8 @@ class Xinfa
      */
     public function create()
     {
+        $this->checkProperties();
+
         $data = [];
         $this->prepareRsa();
 
@@ -56,25 +57,6 @@ class Xinfa
         $data['goodsName'] = self::GOODS_NAME;
         $data['notifyUrl'] = $this->notifyUrl;
         $data['notifyViewUrl'] = $this->redirectUrl;
-
-        $validator = Validator::make($data, [
-            'orderNo' => 'required|string|min:1',
-            'version' => 'required|string|min:1',
-            'charsetCode' => 'required|string|min:1',
-            'randomNum' => 'required|string|min:1',
-            'merchNo' => 'required|string|min:1',
-            'payType' => 'required|string|in:'.implode(',', self::LIST_THIRD_PARTY_PAYMENT_TYPE),
-            'amount' => 'required|int|min:1',
-            'goodsName' => 'required|string|min:1',
-            'notifyUrl' => 'required|string|min:1',
-            'notifyViewUrl' => 'required|string|min:1',
-        ]);
-
-        if ($validator->fails() || empty($this->md5Key)) {
-            // MD5 key cannot be included before calculating checksum.
-            // so we validate it separately from Validator::make()
-            throw new Exception($validator->errors()->toJson());
-        }
 
         $data['sign'] = $this->createSign($data, $this->md5Key);
 
@@ -190,6 +172,10 @@ class Xinfa
      */
     public function setThirdPartyPaymentType($thirdPartyPaymentType)
     {
+        if (array_search($thirdPartyPaymentType, self::LIST_THIRD_PARTY_PAYMENT_TYPE)===false) {
+            throw new Exception('Not allowed third party payment type.');
+        }
+
         $this->thirdPartyPaymentType = $thirdPartyPaymentType;
 
         return $this;
@@ -432,6 +418,39 @@ class Xinfa
             return $signArray;
         } else {
             throw new Exception('返回签名验证失败');
+        }
+    }
+
+    /**
+     * Check if properties exist.
+     *
+     * @return void
+     */
+    private function checkProperties()
+    {
+        if (!isset($this->orderNumber)) {
+            throw new Exception('orderNumber are not ready.');
+        }
+        if (!isset($this->merchantNumber)) {
+            throw new Exception('merchantNumber are not ready.');
+        }
+        if (!isset($this->thirdPartyPaymentType)) {
+            throw new Exception('thirdPartyPaymentType are not ready.');
+        }
+        if (!isset($this->amount)) {
+            throw new Exception('amount are not ready.');
+        }
+        if (!isset($this->notifyUrl)) {
+            throw new Exception('notifyUrl are not ready.');
+        }
+        if (!isset($this->redirectUrl)) {
+            throw new Exception('redirectUrl are not ready.');
+        }
+        if (!isset($this->rsaPrivateKey)) {
+            throw new Exception('rsaPrivateKey are not ready.');
+        }
+        if (!isset($this->rsaPublicKey)) {
+            throw new Exception('rsaPublicKey are not ready.');
         }
     }
 }
