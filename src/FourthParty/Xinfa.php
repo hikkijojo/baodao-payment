@@ -2,17 +2,25 @@
 
 namespace Baodao\Payment\FourthParty;
 
+use Baodao\Payment\Enums\PaymentEnum;
 use Exception;
 
 class Xinfa
 {
+    const NAME = '鑫发支付';
+
     const LIST_THIRD_PARTY_PAYMENT_TYPE = [
+        'ZFB',
         'ZFB_WAP', // 手机端跳转支付宝支付
         'UNION_WAP', // 手机端银联快捷在线支付
+        'WX',
         'WX_WAP', // 手机端跳转微信支付
+        'WX_H5',
+        'QQ',
         'QQ_WAP', // 手机端跳转QQ钱包支付
+        'JD',
         'JD_WAP', // 手机端跳转京东钱包支付
-        'UNION_WALLET', // 银联钱包(云闪付)，银联钱包扫码支付
+        'UNION_WALLET', // 云闪付扫码支付
     ];
 
     const VERSION = 'V3.3.0.0';
@@ -79,9 +87,9 @@ class Xinfa
      *
      * @param array $request
      *
-     * @return string
+     * @return array
      */
-    public function notify(array $request): string
+    public function notify(array $request): array
     {
         if (isset($request['data'], $request['merchNo'], $request['orderNo'])) {
             $data = urldecode($request['data']);
@@ -96,13 +104,61 @@ class Xinfa
             */
 
             if ($verified['merchNo'] != $request['merchNo'] || $verified['orderNo'] != $request['orderNo']) {
-                throw new Exception('Inconsistent data.');
+                return [
+                    'code' => 400,
+                    'order_no' => $verified['orderNo'],
+                    'message' => 'Inconsistent merchNo or orderNo.',
+                ];
             }
 
-            return $verified['orderNo'];
+            return [
+                'code' => 200,
+                'order_no' => $verified['orderNo'],
+                'message' => 'SUCCESS',
+            ];
         }
 
-        throw new Exception('Empty key data in request.');
+        return [
+            'code' => 500,
+            'order_no' => $verified['orderNo'],
+            'message' => 'Empty key data in request.',
+        ];
+    }
+
+    /**
+     * Get config for DB seeding.
+     *
+     * @return array
+     */
+    public function getConfig(): array
+    {
+        return [
+            'cn_name' => self::NAME,
+            'en_name' => strtolower(get_class()),
+            'is_alipay' => 1,
+            'is_wechat' => 1,
+            'is_gateway' => 0,
+            'is_qqpay' => 1,
+            'is_unionpay' => 1,
+            'is_jdpay' => 1,
+            'is_ylpay' => 1,
+            'fields' => json_encode([
+                'merchant' => PaymentEnum::MERCHANT,
+                'md5_key' => PaymentEnum::MD5,
+                'rsa_pub' => PaymentEnum::RSA_PUB,
+                'rsa_pri' => PaymentEnum::RSA_PRI,
+                'trade_code' => [
+                    'alipay' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_WAP],
+                    'wechat' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_WAP, PaymentEnum::TRADE_H5],
+                    'qqpay' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_WAP],
+                    'jdpay' => [PaymentEnum::TRADE_SCAN, PaymentEnum::TRADE_WAP],
+                    'unionpay' => [PaymentEnum::TRADE_SCAN],
+                    'ylpay' => [PaymentEnum::TRADE_WAP],
+                ],
+            ]),
+            'created_at' => new \Datetime(),
+            'updated_at' => new \Datetime(),
+        ];
     }
 
     /**
@@ -172,7 +228,7 @@ class Xinfa
      */
     public function setThirdPartyPaymentType($thirdPartyPaymentType)
     {
-        if (array_search($thirdPartyPaymentType, self::LIST_THIRD_PARTY_PAYMENT_TYPE)===false) {
+        if (false === array_search($thirdPartyPaymentType, self::LIST_THIRD_PARTY_PAYMENT_TYPE)) {
             throw new Exception('Not allowed third party payment type.');
         }
 
