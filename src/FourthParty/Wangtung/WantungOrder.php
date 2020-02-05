@@ -1,6 +1,6 @@
 <?php
 
-namespace Baodao\Payment;
+namespace App\Services\Payment;
 
 use DateTime;
 
@@ -15,18 +15,6 @@ class WantungOrder
 
     public function __construct($no, $amount, DateTime $time, $productName, $productCode, $userNo)
     {
-        if ($amount < 0.01) {
-            throw new \Exception("Amount has to be larger than 0.01, but $amount given");
-        }
-        if (strlen($no) > 30) {
-            throw new \Exception('order_no length should be smaller than 31');
-        }
-        if (strlen($this->user_no) > 20) {
-            throw new \Exception('user_no length should be smaller than 20');
-        }
-        if (strlen($this->product_code) > 24) {
-            throw new \Exception('product_code length should be smaller than 24');
-        }
 
         $this->no = $no;
         $this->amount = $amount;

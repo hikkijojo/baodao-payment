@@ -1,6 +1,6 @@
 <?php
 
-namespace Baodao\Payment;
+namespace Baodao\Payment\FourthParty;
 
 class WangtungCredential
 {
@@ -23,9 +23,7 @@ class WangtungCredential
     public function signMD5(array $paymentArr): string
     {
         try {
-            $transArr = array_filter($paymentArr, function ($val) {
-                return !empty($val);
-            });
+            $transArr = array_filter($paymentArr, function ($val) {return !empty($val); });
             ksort($transArr);
             $str = http_build_query($transArr)."&key={$this->key}";
             $str = urldecode($str);
