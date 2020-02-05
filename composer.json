@@ -1,0 +1,35 @@
+{
+    "name": "baodao/fourth-party-payment",
+    "description": "A library for fourth-party payments.",
+    "type": "library",
+    "license": "license",
+    "authors": [
+        {
+            "name": "33tech",
+            "email": "33tech@33tech.co"
+        }
+    ],
+    "homepage": "https://github.com/33tech-co/baodao-fourth-party-payment",
+    "keywords": ["33tech", "fourth-party-payment"],
+    "require": {
+		"php": "^7.2",
+        "ext-bcmath": "*",
+        "illuminate/support": "~5|~6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~7.0",
+        "mockery/mockery": "^1.1",
+        "orchestra/testbench": "~3.0",
+        "sempro/phpunit-pretty-print": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Baodao\\Payment\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Baodao\\Payment\\Tests\\": "tests/"
+        }
+    }
+}
