@@ -2,7 +2,7 @@
 
 namespace Baodao\Payment;
 
-class PaymentConnection
+class PaymentSetting
 {
     public $appNo; //應用代號
     public $merchantNo; //商戶代號
