@@ -61,7 +61,7 @@ class WantungTest extends TestCase
     public function test_md5_create_payment_weishin_h5()
     {
         $now = new DateTime();
-        $this->setting->orderNo = 'order' . rand(0, 9) . $now->format('Ymdhis');
+        $this->setting->orderNo = 'order' . rand(0, 9) . $now->format('YmdHis');
         $result = $this->payment->create($this->setting);
         fwrite(STDOUT, print_r($result, true));
         self::assertNotEmpty($result->url);
@@ -70,7 +70,7 @@ class WantungTest extends TestCase
     public function test_md5_create_payment_alipay()
     {
         $now = new DateTime();
-        $this->setting->orderNo = 'order' . rand(0, 9) . $now->format('Ymdhis');
+        $this->setting->orderNo = 'order' . rand(0, 9) . $now->format('YmdHis');
         $this->setting->thirdPartyType = PaymentConfig::THIRD_PARTY_ALIPAY;
         $this->setting->tradeType = PaymentConfig::TRADE_H5;
         $this->setting->bankCode = 1;

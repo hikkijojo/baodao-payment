@@ -71,7 +71,7 @@ class HengrunTest extends TestCase
         $now = new \DateTime();
         $setting = new PaymentSetting([]);
         $setting->merchantNo = 'HR181031122711824';
-        $setting->orderNo = 'order' . rand(0, 9) . $now->format('Ymdhis');
+        $setting->orderNo = 'order' . rand(0, 9) . $now->format('YmdHis');
         $setting->orderAmount = '300';
         $setting->thirdPartyType = 'alipay';
         $setting->merchantIp = '11.107.3.21';

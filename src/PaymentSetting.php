@@ -58,13 +58,13 @@ class PaymentSetting
         }
         $now = new \DateTime();
         if(empty($this->productName)) {
-            $this->productName = "Product".$now->format("Ymdhis");
+            $this->productName = "Product".$now->format("YmdHis");
         }
         if(empty($this->productCode)) {
             $this->productCode = $this->productName;
         }
         if(empty($this->userNo)) {
-            $this->userNo = "User".$now->format("Ymdhis");
+            $this->userNo = "User".$now->format("YmdHis");
         }
     }
 }
