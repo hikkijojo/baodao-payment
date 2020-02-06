@@ -4,7 +4,7 @@ namespace Baodao\Payment\FourthParty;
 
 use Baodao\Payment\Contracts\PaymentInterface;
 use Baodao\Payment\PaymentConfig;
-use Baodao\Payment\PaymentConnection;
+use Baodao\Payment\PaymentSetting;
 use Baodao\Payment\PaymentCreation;
 use Baodao\Payment\PaymentNotify;
 use GuzzleHttp\Client;
@@ -59,7 +59,7 @@ class Wantung implements PaymentInterface
     private $rsaPub;
     private $userNo;
 
-    public function setConnection(PaymentConnection $p)
+    public function setConnection(PaymentSetting $p)
     {
         $payType = $this->getPayType($p->thirdPartyType, $p->tradeType);
         if (false == in_array($payType, self::PAY_TYPES)) {
@@ -111,8 +111,9 @@ class Wantung implements PaymentInterface
         $this->readyToConnect = true;
     }
 
-    public function create(): PaymentCreation
+    public function create(PaymentSetting $paymentConnection): PaymentCreation
     {
+        $this->setConnection($paymentConnection);
         if (!$this->readyToConnect) {
             throw new \Exception('Please setConnection first');
         }
@@ -142,7 +143,7 @@ class Wantung implements PaymentInterface
         throw new \Exception('Failed to get recognized response ' . print_r($resultArr));
     }
 
-    public function notify(array $response): PaymentNotify
+    public function notify(PaymentSetting $p,array $response ): PaymentNotify
     {
         if (isset($response['transdata']) && isset($response['sign'])) {
             $transData = urldecode($response['transdata']);
@@ -152,7 +153,7 @@ class Wantung implements PaymentInterface
             $sign = $response['sign'];
             //$sign = urldecode($response['sign']);
             //$sign = utf8_decode($sign);
-            if ($this->checkMD5($transData, $sign)) {
+            if ($this->checkMD5($transData, $p->md5Key, $sign)) {
                 $result = new PaymentNotify();
                 $result->code = 200;
                 $result->message = $result['payment'];
@@ -242,9 +243,9 @@ class Wantung implements PaymentInterface
         }
     }
 
-    public function checkMD5(array $transData, string $sign): bool
+    public function checkMD5(array $transData, string $key, string $sign): bool
     {
-        $str = http_build_query($transData) . "&key={$this->key}";
+        $str = http_build_query($transData) . "&key={$key}";
 
         return $this->genUpperMD5($str) == $sign;
     }
