@@ -15,7 +15,6 @@ class WantungTest extends TestCase
 
     public function test_config()
     {
-        $actual = $this->payment->getConfig()->toArray();
         $expected = ['cn_name'     => '万通支付',
                      'en_name'     => 'wantung',
                      'is_alipay'   => 1,
@@ -29,7 +28,12 @@ class WantungTest extends TestCase
                            'trade_code' => ['alipay'  => ['h5', 'scan'], 'wechat' => ['h5', 'scan'],
                                             'qqpay'   => ['scan'],
                                             'gateway' => [], 'ylpay' => ['scan'], 'jdpay' => ['scan']]];
-        self::assertJson($actual['fields']);
+        $actual = $this->payment->getConfig()->toArray();
+        foreach ($expected as $key=>$val) {
+            if($key !== 'fields') {
+                self::assertEquals($expected[$key], $actual[$key]);
+            }
+        }
     }
 
     public function test_notify()
@@ -92,7 +96,6 @@ class WantungTest extends TestCase
                    'trade_type'       => PaymentConfig::TRADE_H5,
                    'notify_url'       => 'https://dev.33tech.cc/v1/paid/wangtung',
                    'redirect_url'     => 'https://dev.33tech.cc/member',
-                   'host'             => 'https://www.wantong-pay.com',
                    'bank_code'        => null,
                    'bank_card'        => null];
         $this->setting = new PaymentSetting($params);

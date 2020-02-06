@@ -3,6 +3,8 @@
 namespace Baodao\Payment\Tests;
 
 use Baodao\Payment\FourthParty\Hengrun;
+use Baodao\Payment\PaymentConfig;
+use Baodao\Payment\PaymentSetting;
 use PHPUnit\Framework\TestCase;
 
 class HengrunTest extends TestCase
@@ -29,18 +31,57 @@ class HengrunTest extends TestCase
         self::assertEquals($expected, $actual);
     }
 
+    public function test_config()
+    {
+        $fields = [
+            'merchant'   => PaymentConfig::MERCHANT,
+            'md5_key'    => PaymentConfig::MD5,
+            'trade_code' => [
+                'alipay'  => [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5],
+                'wechat'  => [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5],
+                'qqpay'   => [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5],
+                'gateway' => [],
+                'ylpay'   => [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5],
+                'jdpay'   => [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5],
+            ]
+        ];
+        $expected =
+            [
+                'cn_name'     => '恒润支付',
+                'en_name'     => 'hengrun',
+                'is_alipay'   => 1,
+                'is_wechat'   => 1,
+                'is_gateway'  => 1,
+                'is_qqpay'    => 1,
+                'is_unionpay' => 0,
+                'is_jdpay'    => 1,
+                'is_ylpay'    => 1,
+                'fields'      => json_encode($fields)
+            ];
+        $actual = $this->payment->getConfig()->toArray();
+        foreach ($expected as $key=>$val) {
+            if($key !== 'fields') {
+                self::assertEquals($expected[$key], $actual[$key]);
+            }
+        }
+    }
+
     public function test_create()
     {
         $now = new \DateTime();
-        $params = [
-            'merchant' => 'HR181031122711824',
-            'order_no' => 'order' . rand(0, 9) . $now->format('Ymdhis'),
-            'amount'   => '300',
-            'payment'  => 'alipay',
-            'tradeIp'  => '11.107.3.21',
-        ];
-        $actual = $this->payment->create($params);
-        dd($actual);
+        $setting = new PaymentSetting([]);
+        $setting->merchantNo = 'HR181031122711824';
+        $setting->orderNo = 'order' . rand(0, 9) . $now->format('Ymdhis');
+        $setting->orderAmount = '300';
+        $setting->thirdPartyType = 'alipay';
+        $setting->merchantIp = '11.107.3.21';
+        $setting->productName = 'TestProduct';
+        $setting->md5Key = $this->md5Key;
+        $setting->notifyUrl  = 'http://localhost/v1/payment/notify/'.strtolower((new \ReflectionClass($this->payment))->getShortName());
+        $actual = $this->payment->create($setting);
+
+        fwrite(STDOUT, print_r($actual, true));
+        self::assertNotEmpty($actual->url);
         /*
          *
          * [
@@ -54,10 +95,14 @@ class HengrunTest extends TestCase
          * */
     }
 
+//    public function test_notify()
+//    {
+//    }
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->payment = new Hengrun($this->md5Key);
+        $this->payment = new Hengrun();
     }
 
 }

@@ -75,7 +75,7 @@ class Wantung implements PaymentInterface
             throw new \Exception('微信H5，merchantIp 为必填字段');
         }
         if ($p->orderAmount < 0.01) {
-            throw new \Exception("Amount has to be larger than 0.01, but $amount given");
+            throw new \Exception("Amount has to be larger than 0.01, but {$p->orderAmount} given");
         }
         if (strlen($p->orderNo) > 30) {
             throw new \Exception('order_no length should be smaller than 31');
@@ -95,7 +95,6 @@ class Wantung implements PaymentInterface
         $this->bankCode = $p->bankCode;
         $this->bankCard = $p->bankCard;
         $this->merchantIp = $p->merchantIp;
-        $this->host = $p->host;
         $this->orderNo = $p->orderNo;
         $this->orderAmount = $p->orderAmount;
         $this->orderTime = $p->orderTime->format('YmdHis');
@@ -107,7 +106,7 @@ class Wantung implements PaymentInterface
         $this->key = $p->md5Key;
         $this->rsaPri = $p->rsaPrivateKey;
         $this->rsaPub = $p->rsaPublicKey;
-        $this->host = $p->host;
+        $this->host = empty($p->host) ? 'https://www.wantong-pay.com' : $p->host;
         $this->readyToConnect = true;
     }
 
@@ -129,6 +128,7 @@ class Wantung implements PaymentInterface
         $resultArr = json_decode($response->getBody(), true);
         if (isset($resultArr['payment']) && true == $resultArr['payment']) {
             $result = new PaymentCreation();
+            $result->code = 200;
             if (isset($resultArr['payUrl'])) {
                 $result->url = $resultArr['payUrl'];
             }
@@ -215,9 +215,9 @@ class Wantung implements PaymentInterface
                  ->setFieldMd5Key()
                  //->setFieldRsa()
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_ALIPAY,
-                                     [PaymentConfig::TRADE_H5, PaymentConfig::TRADE_SCAN])
+                                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_WECHAT,
-                                     [PaymentConfig::TRADE_H5, PaymentConfig::TRADE_SCAN])
+                                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_QQ,
                                      [PaymentConfig::TRADE_SCAN])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_GATEWAY, [])
