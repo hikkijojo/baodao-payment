@@ -2,29 +2,43 @@
 
 namespace Baodao\Payment\FourthParty;
 
+use Baodao\Payment\Contracts\PaymentInterface;
 use Baodao\Payment\PaymentConfig;
 use Baodao\Payment\PaymentCreation;
 use Baodao\Payment\PaymentNotify;
+use Baodao\Payment\PaymentSetting;
 use Exception;
 
-class Xinfa
+class Xinfa implements PaymentInterface
 {
     const CN_NAME = '鑫发支付';
     const EN_NAME = 'xinfa';
 
-    const LIST_THIRD_PARTY_PAYMENT_TYPE = [
-        'ZFB',
-        'ZFB_WAP', // 手机端跳转支付宝支付
-        'UNION_WAP', // 手机端银联快捷在线支付
-        'WX',
-        'WX_WAP', // 手机端跳转微信支付
-        'WX_H5',
-        'QQ',
-        'QQ_WAP', // 手机端跳转QQ钱包支付
-        'JD',
-        'JD_WAP', // 手机端跳转京东钱包支付
-        'UNION_WALLET', // 云闪付扫码支付
+    const PAY_TYPES = [
+        self::ZFB, // 支付寶掃碼
+        self::ZFB_WAP, // 手机端跳转支付宝支付
+        self::UNION_WAP, // 手机端银联快捷在线支付
+        self::WX, // 微信掃碼
+        self::WX_WAP, // 手机端跳转微信支付
+        self::WX_H5, // 微信跳轉
+        self::QQ, // QQ 掃碼
+        self::QQ_WAP, // 手机端跳转QQ钱包支付
+        self::JD, // 京東掃碼
+        self::JD_WAP, // 手机端跳转京东钱包支付
+        self::UNION_WALLET, // 云闪付扫码支付
     ];
+
+    const ZFB = 'ZFB';
+    const ZFB_WAP = 'ZFB_WAP';
+    const UNION_WAP = 'UNION_WAP';
+    const WX = 'WX';
+    const WX_WAP = 'WX_WAP';
+    const WX_H5 = 'WX_H5';
+    const QQ = 'QQ';
+    const QQ_WAP = 'QQ_WAP';
+    const JD = 'JD';
+    const JD_WAP = 'JD_WAP';
+    const UNION_WALLET = 'UNION_WALLET';
 
     const VERSION = 'V3.3.0.0';
     const CHARSET = 'UTF-8';
@@ -34,11 +48,11 @@ class Xinfa
     const GOODS_NAME = 'Baodao';
     const STATE_SUCCESS = '00';
 
-    private $merchantNumber;
+    private $merchNo;
     private $md5Key;
     private $rsaPublicKey;
     private $rsaPrivateKey;
-    private $orderNumber;
+    private $orderNo;
     private $thirdPartyPaymentType;
     private $amount;
     private $notifyUrl;
@@ -51,18 +65,19 @@ class Xinfa
      *
      * @return PaymentCreation
      */
-    public function create(): PaymentCreation
+    public function create(PaymentSetting $paymentSetting): PaymentCreation
     {
+        $this->setConnection($paymentSetting);
         $this->checkProperties();
 
         $data = [];
         $this->prepareRsa();
 
-        $data['orderNo'] = $this->orderNumber;
+        $data['orderNo'] = $this->orderNo;
         $data['version'] = self::VERSION;
         $data['charsetCode'] = self::CHARSET;
         $data['randomNum'] = (string) rand(1000, 9999);
-        $data['merchNo'] = $this->merchantNumber;
+        $data['merchNo'] = $this->merchNo;
         $data['payType'] = $this->thirdPartyPaymentType; // WX: 微信支付, ZFB:支付宝支付
         $data['amount'] = bcmul($this->amount, 100); // 人民幣元 轉為 鑫發使用的人民幣分
         $data['goodsName'] = self::GOODS_NAME;
@@ -73,27 +88,36 @@ class Xinfa
 
         $json = json_encode($data, $this->encodeOptions);
         $dataStr = $this->encodePaymentData($json);
-        $param = 'data='.urlencode($dataStr).'&merchNo='.$this->merchantNumber;
+        $param = 'data='.urlencode($dataStr).'&merchNo='.$this->merchNo;
 
         $result = $this->post($param);
         $verified = $this->verifyCreation($result, $this->md5Key);
 
-        if (empty($verified['qrcodeUrl'])) {
-            throw new Exception('No payable URL.');
+        if (!empty($verified['qrcodeUrl'])) {
+            $result = new PaymentCreation();
+            $result->code = 200;
+            $result->url = $verified['qrcodeUrl'];
+
+            return $result;
+        } elseif (isset($verified['msg'])) {
+            throw new Exception($verified['msg']);
         }
 
-        return new PaymentCreation($verified['qrcodeUrl']);
+        throw new Exception('Failed to get recognized response '.print_r($verified, true));
     }
 
     /**
      * Receive asynchronous notifications from Xinfa and thereafter return order number.
      *
-     * @param array $request
+     * @param array          $request
+     * @param PaymentSetting $p
      *
      * @return PaymentNotify
      */
-    public function notify(array $request): PaymentNotify
+    public function notify(PaymentSetting $p, array $request): PaymentNotify
     {
+        $this->prepareBeingNotified($p);
+
         if (isset($request['data'], $request['merchNo'], $request['orderNo'])) {
             $data = urldecode($request['data']);
             $this->prepareRsa();
@@ -166,115 +190,55 @@ class Xinfa
     }
 
     /**
-     * Set the value of merchantNumber.
+     * There is no bank supported by Xinfa.
      *
-     * @return self
+     * @return array
      */
-    public function setMerchantNumber($merchantNumber)
+    public function getBanks(): array
     {
-        $this->merchantNumber = $merchantNumber;
-
-        return $this;
+        return [];
     }
 
     /**
-     * Set the value of md5Key.
+     * Set properties for create() function.
      *
-     * @return self
-     */
-    public function setMd5Key($md5Key)
-    {
-        $this->md5Key = $md5Key;
-
-        return $this;
-    }
-
-    /**
-     * Set the value of rsaPublicKey.
+     * @param PaymentSetting $p
      *
-     * @return self
+     * @return void
      */
-    public function setRsaPublicKey($rsaPublicKey)
+    private function setConnection(PaymentSetting $p)
     {
-        $this->rsaPublicKey = $rsaPublicKey;
+        $this->rsaPrivateKey = $p->rsaPrivateKey;
+        $this->rsaPublicKey = $p->rsaPublicKey;
 
-        return $this;
-    }
-
-    /**
-     * Set the value of rsaPrivateKey.
-     *
-     * @return self
-     */
-    public function setRsaPrivateKey($rsaPrivateKey)
-    {
-        $this->rsaPrivateKey = $rsaPrivateKey;
-
-        return $this;
-    }
-
-    /**
-     * Set the value of orderNumber.
-     *
-     * @return self
-     */
-    public function setOrderNumber($orderNumber)
-    {
-        $this->orderNumber = $orderNumber;
-
-        return $this;
-    }
-
-    /**
-     * Set the value of thirdPartyPaymentType.
-     *
-     * @return self
-     */
-    public function setThirdPartyPaymentType($thirdPartyPaymentType)
-    {
-        if (false === array_search($thirdPartyPaymentType, self::LIST_THIRD_PARTY_PAYMENT_TYPE)) {
-            throw new Exception('Not allowed third party payment type.');
+        $payType = $this->getPayType($p->thirdPartyType, $p->tradeType);
+        if (false == in_array($payType, self::PAY_TYPES)) {
+            throw new \Exception("Unknown pay_type $payType");
         }
 
-        $this->thirdPartyPaymentType = $thirdPartyPaymentType;
+        $this->orderNo = $p->orderNo;
+        $this->merchNo = $p->merchantNo;
+        $this->thirdPartyPaymentType = $payType;
+        $this->amount = $p->orderAmount;
 
-        return $this;
+        $this->host = empty($p->host) ? 'https://www.wantong-pay.com' : $p->host;
+        $this->notifyUrl = $p->notifyUrl;
+        $this->redirectUrl = $p->redirectUrl;
+        $this->md5Key = $p->md5Key;
+        $this->readyToConnect = true;
     }
 
     /**
-     * Set the value of amount.
+     * Prepare properties for being notified by Xinfa.
      *
-     * @return self
-     */
-    public function setAmount($amount)
-    {
-        $this->amount = $amount;
-
-        return $this;
-    }
-
-    /**
-     * Set the value of notifyUrl.
+     * @param PaymentSetting $p
      *
-     * @return self
+     * @return void
      */
-    public function setNotifyUrl($notifyUrl)
+    private function prepareBeingNotified(PaymentSetting $p)
     {
-        $this->notifyUrl = $notifyUrl;
-
-        return $this;
-    }
-
-    /**
-     * Set the value of redirectUrl.
-     *
-     * @return self
-     */
-    public function setRedirectUrl($redirectUrl)
-    {
-        $this->redirectUrl = $redirectUrl;
-
-        return $this;
+        $this->rsaPrivateKey = $p->rsaPrivateKey;
+        $this->rsaPublicKey = $p->rsaPublicKey;
     }
 
     /**
@@ -488,11 +452,17 @@ class Xinfa
      */
     private function checkProperties()
     {
-        if (!isset($this->orderNumber)) {
-            throw new Exception('orderNumber are not ready.');
+        if (!isset($this->rsaPrivateKey)) {
+            throw new Exception('rsaPrivateKey are not ready.');
         }
-        if (!isset($this->merchantNumber)) {
-            throw new Exception('merchantNumber are not ready.');
+        if (!isset($this->rsaPublicKey)) {
+            throw new Exception('rsaPublicKey are not ready.');
+        }
+        if (!isset($this->orderNo)) {
+            throw new Exception('orderNo are not ready.');
+        }
+        if (!isset($this->merchNo)) {
+            throw new Exception('merchNo are not ready.');
         }
         if (!isset($this->thirdPartyPaymentType)) {
             throw new Exception('thirdPartyPaymentType are not ready.');
@@ -506,11 +476,50 @@ class Xinfa
         if (!isset($this->redirectUrl)) {
             throw new Exception('redirectUrl are not ready.');
         }
-        if (!isset($this->rsaPrivateKey)) {
-            throw new Exception('rsaPrivateKey are not ready.');
+    }
+
+    private function getPayType($thirdPartyType, $tradeType)
+    {
+        if (PaymentConfig::THIRD_PARTY_ALIPAY == $thirdPartyType) {
+            if (PaymentConfig::TRADE_WAP == $tradeType) {
+                return self::ZFB_WAP;
+            }
+
+            return self::ZFB;
         }
-        if (!isset($this->rsaPublicKey)) {
-            throw new Exception('rsaPublicKey are not ready.');
+
+        if (PaymentConfig::THIRD_PARTY_YLPAY == $thirdPartyType) {
+            return self::UNION_WAP;
+        }
+
+        if (PaymentConfig::THIRD_PARTY_WECHAT == $thirdPartyType) {
+            if (PaymentConfig::TRADE_H5 == $tradeType) {
+                return self::WX_H5;
+            } elseif (PaymentConfig::TRADE_WAP == $tradeType) {
+                return self::WX_WAP;
+            }
+
+            return self::WX;
+        }
+
+        if (PaymentConfig::THIRD_PARTY_QQ == $thirdPartyType) {
+            if (PaymentConfig::TRADE_WAP == $tradeType) {
+                return self::QQ_WAP;
+            }
+
+            return self::QQ;
+        }
+
+        if (PaymentConfig::THIRD_PARTY_JDPAY == $thirdPartyType) {
+            if (PaymentConfig::TRADE_WAP == $tradeType) {
+                return self::JD_WAP;
+            }
+
+            return self::JD;
+        }
+
+        if (PaymentConfig::THIRD_PARTY_UNIONPAY == $thirdPartyType) {
+            return self::UNION_WALLET;
         }
     }
 }
