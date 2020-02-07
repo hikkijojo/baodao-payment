@@ -9,7 +9,8 @@ use Exception;
 
 class Xinfa
 {
-    const NAME = '鑫发支付';
+    const CN_NAME = '鑫发支付';
+    const EN_NAME = 'xinfa';
 
     const LIST_THIRD_PARTY_PAYMENT_TYPE = [
         'ZFB',
@@ -138,8 +139,8 @@ class Xinfa
     {
         $c = new PaymentConfig();
 
-        return $c->setCnName(self::NAME)
-                 ->setEnName(strtolower(get_class()))
+        return $c->setCnName(self::CN_NAME)
+                 ->setEnName(self::EN_NAME)
                  ->setThirdParty([
                      PaymentConfig::THIRD_PARTY_ALIPAY,
                      PaymentConfig::THIRD_PARTY_WECHAT,
@@ -151,15 +152,15 @@ class Xinfa
                  ->setFieldMd5Key()
                  ->setFieldRsa()
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_ALIPAY,
-                                     [PaymentConfig::TRADE_WAP, PaymentConfig::TRADE_SCAN])
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_WECHAT,
-                                     [PaymentConfig::TRADE_WAP, PaymentConfig::TRADE_H5, PaymentConfig::TRADE_SCAN])
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_QQ,
-                                     [PaymentConfig::TRADE_WAP, PaymentConfig::TRADE_SCAN])
+                                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_JDPAY,
-                                     [PaymentConfig::TRADE_WAP, PaymentConfig::TRADE_SCAN])
+                                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP])
+                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_QQ,
+                                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_UNIONPAY,
                                      [PaymentConfig::TRADE_SCAN])
+                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_WECHAT,
+                                     [PaymentConfig::TRADE_H5, PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_YLPAY,
                                      [PaymentConfig::TRADE_WAP]);
     }
