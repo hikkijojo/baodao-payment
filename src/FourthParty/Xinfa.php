@@ -140,7 +140,7 @@ class Xinfa implements PaymentInterface
                 return $paymentNotify;
             }
 
-            $paymentNotify->code = 400;
+            $paymentNotify->code = 200;
             $paymentNotify->message = 'SUCCESS';
             $paymentNotify->orderNo = $verified['orderNo'];
 
