@@ -14,18 +14,18 @@ class Hengrun implements PaymentInterface
     const URL = 'http://api.kuaile8899.com:8088/pay/apply.shtml';
     protected $md5Key;
 
-    public function create(PaymentSetting $p):PaymentCreation
+    public function create(PaymentSetting $p): PaymentCreation
     {
         $this->md5Key = $p->md5Key;
         $form = [
-            'appID'        => $p->merchantNo,
-            'tradeCode'    => $this->getPayCode($p->thirdPartyType),
-            'randomNo'     => random_int(10000, 99999),
-            'outTradeNo'   => $p->orderNo,
-            'totalAmount'  => $p->orderAmount * 100,
+            'appID' => $p->merchantNo,
+            'tradeCode' => $this->getPayCode($p->thirdPartyType, $p->tradeType),
+            'randomNo' => random_int(10000, 99999),
+            'outTradeNo' => $p->orderNo,
+            'totalAmount' => $p->orderAmount * 100,
             'productTitle' => $p->productName,
-            'notifyUrl'    => $p->notifyUrl,
-            'tradeIP'      => $p->merchantIp,
+            'notifyUrl' => $p->notifyUrl,
+            'tradeIP' => $p->merchantIp,
         ];
         ksort($form);
         $form['sign'] = $this->encryptSign($form, $this->md5Key);
@@ -34,40 +34,45 @@ class Hengrun implements PaymentInterface
                                     ]);
         $result = new PaymentCreation();
         if ('0000' === $response['stateCode']) {
-            $result->url = $response['payURL']??null;
+            $result->url = $response['payURL'] ?? null;
             $result->code = 200;
-            $result->message = $response['stateInfo']??null;
+            $result->message = $response['stateInfo'] ?? null;
+
             return $result;
         }
         $result->code = 500;
-        $result->message = $response['stateInfo']??null;
+        $result->message = $response['stateInfo'] ?? null;
+
         return $result;
     }
 
-    public function notify(PaymentSetting $p,  array $inputs):PaymentNotify
+    public function notify(PaymentSetting $p, array $inputs): PaymentNotify
     {
         $data = json_decode($inputs['NoticeParams'], true);
         $result = new PaymentNotify();
         if ('0000' != $data['payCode']) {
             $result->code = 400;
             $result->orderNo = $data['outTradeNo'];
-            $result->message=null;
+            $result->message = null;
+
             return $result;
         }
         if ($this->signCheck($data, $p->md5Key)) {
             $result->code = 200;
             $result->orderNo = $data['outTradeNo'];
-            $result->message='SUCCESS';
+            $result->message = 'SUCCESS';
+
             return $result;
         }
 
         $result->code = 500;
         $result->orderNo = $data['outTradeNo'];
-        $result->message=null;
+        $result->message = null;
+
         return $result;
     }
 
-    public function getConfig():PaymentConfig
+    public function getConfig(): PaymentConfig
     {
         $c = new PaymentConfig();
         $enName = (new \ReflectionClass($this))->getShortName();
@@ -79,13 +84,13 @@ class Hengrun implements PaymentInterface
                              PaymentConfig::THIRD_PARTY_QQ,
                              PaymentConfig::THIRD_PARTY_GATEWAY,
                              PaymentConfig::THIRD_PARTY_YLPAY,
-                             PaymentConfig::THIRD_PARTY_JDPAY])
+                             PaymentConfig::THIRD_PARTY_JDPAY, ])
             ->setFieldMerchant()
             ->setFieldMd5Key()
             ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_ALIPAY,
-                                [PaymentConfig::TRADE_SCAN,PaymentConfig::TRADE_H5 ])
+                                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5])
             ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_WECHAT,
-                                [PaymentConfig::TRADE_SCAN,PaymentConfig::TRADE_H5 ])
+                                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5])
             ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_QQ,
                                 [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5])
             ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_GATEWAY, [])
@@ -123,18 +128,19 @@ class Hengrun implements PaymentInterface
     {
         return strtoupper(
             md5(
-                implode('|', array_values($params)) .
-                '|' .
+                implode('|', array_values($params)).
+                '|'.
                 $key
             )
         );
     }
+
     public function getBanks()
     {
         return [];
     }
 
-    private function signCheck($data,$md5Key)
+    private function signCheck($data, $md5Key)
     {
         $sign = $data['sign'];
         unset($data['sign']);
@@ -147,10 +153,10 @@ class Hengrun implements PaymentInterface
     {
         $ch = curl_init();
         curl_setopt_array($ch, [
-            CURLOPT_URL            => self::URL,
-            CURLOPT_POST           => true,
+            CURLOPT_URL => self::URL,
+            CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POSTFIELDS     => $fields,
+            CURLOPT_POSTFIELDS => $fields,
         ]);
         $response = curl_exec($ch);
         curl_close($ch);
@@ -158,24 +164,44 @@ class Hengrun implements PaymentInterface
         return json_decode($response, true);
     }
 
-    private function getPayCode(string $payment): string
+    private function getPayCode(string $payment, string $trade): string
     {
         $code = '';
         switch ($payment) {
             case 'wechat':
-                $code = '80001';
+                if ($trade == 'scan') {
+                    $code = '60001';
+                } else {
+                    $code = '80001';
+                }
                 break;
             case 'alipay':
-                $code = '80002';
+                if ($trade == 'scan') {
+                    $code = '60002';
+                } else {
+                    $code = '80002';
+                }
                 break;
             case 'qqpay':
-                $code = '80003';
+                if ($trade == 'scan') {
+                    $code = '60003';
+                } else {
+                    $code = '80003';
+                }
                 break;
             case 'jdpay':
-                $code = '80004';
+                if ($trade == 'scan') {
+                    $code = '60004';
+                } else {
+                    $code = '80004';
+                }
                 break;
-            case 'unionpay':
-                $code = '80005';
+            case 'ylpay':
+                if ($trade == 'scan') {
+                    $code = '60005';
+                } else {
+                    $code = '80005';
+                }
                 break;
             case 'gateway':
                 $code = '30003';

@@ -8,6 +8,7 @@ use Baodao\Payment\PaymentSetting;
 use Baodao\Payment\PaymentCreation;
 use Baodao\Payment\PaymentNotify;
 use GuzzleHttp\Client;
+
 class Wantung implements PaymentInterface
 {
     const MD5 = 'MD5';
@@ -19,7 +20,7 @@ class Wantung implements PaymentInterface
                        self::WANGGUAN,
                        //self::KUAIJIE,
                        self::YL,
-                       self::JD,];
+                       self::JD, ];
     const WEIXIN = 'weixin';           //微信
     const WEIXIN_H5 = 'weixin-h5';     //微信H5
     const ZHIFUBAO = 'zhifubao';       //支付宝
@@ -32,16 +33,16 @@ class Wantung implements PaymentInterface
     private $appnoNo;
     private $bankCard;
     private $bankCode;
-    private $bankCodeMap = [1  => 'ICBC',
-                            3  => 'ABC',
-                            7  => 'BOC',
-                            2  => 'CCB',
-                            9  => 'CITIC',
+    private $bankCodeMap = [1 => 'ICBC',
+                            3 => 'ABC',
+                            7 => 'BOC',
+                            2 => 'CCB',
+                            9 => 'CITIC',
                             15 => 'CEB',
                             13 => 'GDB',
                             14 => 'PAB',
                             12 => 'SPDB',
-                            8  => 'PSBC',];
+                            8 => 'PSBC', ];
     private $host;
     private $key;
     private $merchantCode;
@@ -120,10 +121,10 @@ class Wantung implements PaymentInterface
             throw new \Exception('Empty host');
         }
         $client = new Client();
-        $response = $client->request('POST', $this->host . '/WTPay', [
-            'headers' => ['Accept'       => 'application/json',
-                          'Content-type' => 'application/json',],
-            'json'    => $this->prepareBody(),
+        $response = $client->request('POST', $this->host.'/WTPay', [
+            'headers' => ['Accept' => 'application/json',
+                          'Content-type' => 'application/json', ],
+            'json' => $this->prepareBody(),
         ]);
         $resultArr = json_decode($response->getBody(), true);
         if (isset($resultArr['payment']) && true == $resultArr['payment']) {
@@ -140,14 +141,14 @@ class Wantung implements PaymentInterface
         } elseif (isset($resultArr['message'])) {
             throw new \Exception($resultArr['message']);
         }
-        throw new \Exception('Failed to get recognized response ' . print_r($resultArr));
+        throw new \Exception('Failed to get recognized response '.print_r($resultArr));
     }
 
-    public function notify(PaymentSetting $p,array $response ): PaymentNotify
+    public function notify(PaymentSetting $p, array $response): PaymentNotify
     {
         if (isset($response['transdata']) && isset($response['sign'])) {
             $transData = urldecode($response['transdata']);
-            if(false == is_array($transData)) {
+            if (false == is_array($transData)) {
                 $transData = json_decode($transData, true);
             }
             $sign = $response['sign'];
@@ -159,10 +160,11 @@ class Wantung implements PaymentInterface
                 $result->message = $result['payment'];
                 $result->orderNo = $result['order_no'];
                 $result->orderAmount = $result['order_amount'];
+
                 return $result;
             }
         }
-        throw new \Exception("Failed to check MD5 from response ".print_r($response));
+        throw new \Exception('Failed to check MD5 from response '.print_r($response));
     }
 
     public function prepareBody()
@@ -171,26 +173,26 @@ class Wantung implements PaymentInterface
             throw new \Exception('Please setConnection first');
         }
         $paymentArr = [
-            'order_no'     => (string)$this->orderNo,
-            'order_amount' => (string)$this->orderAmount,
-            'order_time'   => (string)$this->orderTime,
-            'product_name' => (string)$this->productName,
-            'product_code' => (string)$this->productCode,
-            'user_no'      => (string)$this->userNo,
-            'notify_url'   => (string)$this->notifyUrl ? : 'https://dev.33tech.cc/v1/paid/wangtung',
-            'pay_type'     => (string)$this->payType,
-            'bank_code'    => (string)$this->bankCode ? : '',
-            'return_url'   => (string)$this->returnUrl ? : 'https://dev.33tech.cc/member',
-            'merchant_ip'  => (string)$this->merchantIp ? : '',
-            'bank_card'    => (string)$this->bankCard ? : '',];
+            'order_no' => (string) $this->orderNo,
+            'order_amount' => (string) $this->orderAmount,
+            'order_time' => (string) $this->orderTime,
+            'product_name' => (string) $this->productName,
+            'product_code' => (string) $this->productCode,
+            'user_no' => (string) $this->userNo,
+            'notify_url' => (string) $this->notifyUrl ?: 'https://dev.33tech.cc/v1/paid/wangtung',
+            'pay_type' => (string) $this->payType,
+            'bank_code' => (string) $this->bankCode ?: '',
+            'return_url' => (string) $this->returnUrl ?: 'https://dev.33tech.cc/member',
+            'merchant_ip' => (string) $this->merchantIp ?: '',
+            'bank_card' => (string) $this->bankCard ?: '', ];
         $credentialArr = $this->getCredentials();
         $paymentArr = array_merge($credentialArr, $paymentArr);
         $transdata = json_encode($paymentArr, JSON_UNESCAPED_SLASHES);
         $transdata = utf8_encode($transdata);
 
         return ['transdata' => urlencode($transdata),
-                'sign'      => urlencode($this->signMD5($paymentArr)),
-                'signtype'  => self::MD5,];
+                'sign' => urlencode($this->signMD5($paymentArr)),
+                'signtype' => self::MD5, ];
     }
 
     public function getBanks(): array
@@ -209,7 +211,7 @@ class Wantung implements PaymentInterface
                                   PaymentConfig::THIRD_PARTY_QQ,
                                   PaymentConfig::THIRD_PARTY_GATEWAY,
                                   PaymentConfig::THIRD_PARTY_YLPAY,
-                                  PaymentConfig::THIRD_PARTY_JDPAY])
+                                  PaymentConfig::THIRD_PARTY_JDPAY, ])
                  ->setFieldAppNo()
                  ->setFieldMerchant()
                  ->setFieldMd5Key()
@@ -222,9 +224,9 @@ class Wantung implements PaymentInterface
                                      [PaymentConfig::TRADE_SCAN])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_GATEWAY, [])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_YLPAY,
-                                     [ PaymentConfig::TRADE_SCAN])
+                                     [PaymentConfig::TRADE_SCAN])
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_JDPAY,
-                                     [ PaymentConfig::TRADE_SCAN]);
+                                     [PaymentConfig::TRADE_SCAN]);
     }
 
     public function signMD5(array $paymentArr): string
@@ -234,7 +236,7 @@ class Wantung implements PaymentInterface
                 return !empty($val);
             });
             ksort($transArr);
-            $str = http_build_query($transArr) . "&key={$this->key}";
+            $str = http_build_query($transArr)."&key={$this->key}";
             $str = urldecode($str);
 
             return $this->genUpperMD5($str);
@@ -245,43 +247,43 @@ class Wantung implements PaymentInterface
 
     public function checkMD5(array $transData, string $key, string $sign): bool
     {
-        $str = http_build_query($transData) . "&key={$key}";
+        $str = http_build_query($transData)."&key={$key}";
 
         return $this->genUpperMD5($str) == $sign;
     }
 
     public function getCredentials(): array
     {
-        return ['appno_no'      => $this->appnoNo,
-                'merchant_code' => $this->merchantCode,];
+        return ['appno_no' => $this->appnoNo,
+                'merchant_code' => $this->merchantCode, ];
     }
 
     private function getPayType($thirdPartyType, $tradeType)
     {
-        if ($thirdPartyType == PaymentConfig::THIRD_PARTY_WECHAT) {
-            if ($tradeType == PaymentConfig::TRADE_H5) {
+        if (PaymentConfig::THIRD_PARTY_WECHAT == $thirdPartyType) {
+            if (PaymentConfig::TRADE_H5 == $tradeType) {
                 return self::WEIXIN_H5;
             }
 
             return self::WEIXIN;
         }
-        if ($thirdPartyType == PaymentConfig::THIRD_PARTY_ALIPAY) {
-            if ($tradeType == PaymentConfig::TRADE_H5) {
+        if (PaymentConfig::THIRD_PARTY_ALIPAY == $thirdPartyType) {
+            if (PaymentConfig::TRADE_H5 == $tradeType) {
                 return self::ZHIFUBAO_H5;
             }
 
             return self::ZHIFUBAO;
         }
-        if ($thirdPartyType == PaymentConfig::THIRD_PARTY_QQ) {
+        if (PaymentConfig::THIRD_PARTY_QQ == $thirdPartyType) {
             return self::QQ;
         }
-        if ($thirdPartyType == PaymentConfig::THIRD_PARTY_GATEWAY) {
+        if (PaymentConfig::THIRD_PARTY_GATEWAY == $thirdPartyType) {
             return self::WANGGUAN;
         }
-        if ($thirdPartyType == PaymentConfig::THIRD_PARTY_YLPAY) {
+        if (PaymentConfig::THIRD_PARTY_YLPAY == $thirdPartyType) {
             return self::YL;
         }
-        if ($thirdPartyType == PaymentConfig::THIRD_PARTY_JDPAY) {
+        if (PaymentConfig::THIRD_PARTY_JDPAY == $thirdPartyType) {
             return self::JD;
         }
     }
