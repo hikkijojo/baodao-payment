@@ -60,7 +60,7 @@ class HengrunTest extends TestCase
             ];
         $actual = $this->payment->getConfig()->toArray();
         foreach ($expected as $key=>$val) {
-            if($key !== 'fields') {
+            if ($key !== 'fields') {
                 self::assertEquals($expected[$key], $actual[$key]);
             }
         }
@@ -104,5 +104,4 @@ class HengrunTest extends TestCase
         parent::setUp();
         $this->payment = new Hengrun();
     }
-
 }
