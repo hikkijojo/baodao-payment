@@ -175,18 +175,30 @@ class Xinfa implements PaymentInterface
                  ->setFieldMerchant()
                  ->setFieldMd5Key()
                  ->setFieldRsa()
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_ALIPAY,
-                                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP])
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_JDPAY,
-                                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP])
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_QQ,
-                                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP])
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_UNIONPAY,
-                                     [PaymentConfig::TRADE_SCAN])
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_WECHAT,
-                                     [PaymentConfig::TRADE_H5, PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP])
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_YLPAY,
-                                     [PaymentConfig::TRADE_WAP]);
+                 ->setFieldTradeCode(
+                     PaymentConfig::THIRD_PARTY_ALIPAY,
+                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP]
+                 )
+                 ->setFieldTradeCode(
+                     PaymentConfig::THIRD_PARTY_JDPAY,
+                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP]
+                 )
+                 ->setFieldTradeCode(
+                     PaymentConfig::THIRD_PARTY_QQ,
+                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP]
+                 )
+                 ->setFieldTradeCode(
+                     PaymentConfig::THIRD_PARTY_UNIONPAY,
+                     [PaymentConfig::TRADE_SCAN]
+                 )
+                 ->setFieldTradeCode(
+                     PaymentConfig::THIRD_PARTY_WECHAT,
+                     [PaymentConfig::TRADE_H5, PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_WAP]
+                 )
+                 ->setFieldTradeCode(
+                     PaymentConfig::THIRD_PARTY_YLPAY,
+                     [PaymentConfig::TRADE_WAP]
+                 );
     }
 
     /**

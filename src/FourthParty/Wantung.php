@@ -216,17 +216,27 @@ class Wantung implements PaymentInterface
                  ->setFieldMerchant()
                  ->setFieldMd5Key()
                  //->setFieldRsa()
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_ALIPAY,
-                                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5])
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_WECHAT,
-                                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5])
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_QQ,
-                                     [PaymentConfig::TRADE_SCAN])
+                 ->setFieldTradeCode(
+                     PaymentConfig::THIRD_PARTY_ALIPAY,
+                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5]
+                 )
+                 ->setFieldTradeCode(
+                     PaymentConfig::THIRD_PARTY_WECHAT,
+                     [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5]
+                 )
+                 ->setFieldTradeCode(
+                     PaymentConfig::THIRD_PARTY_QQ,
+                     [PaymentConfig::TRADE_SCAN]
+                 )
                  ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_GATEWAY, [])
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_YLPAY,
-                                     [PaymentConfig::TRADE_SCAN])
-                 ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_JDPAY,
-                                     [PaymentConfig::TRADE_SCAN]);
+                 ->setFieldTradeCode(
+                     PaymentConfig::THIRD_PARTY_YLPAY,
+                     [PaymentConfig::TRADE_SCAN]
+                 )
+                 ->setFieldTradeCode(
+                     PaymentConfig::THIRD_PARTY_JDPAY,
+                     [PaymentConfig::TRADE_SCAN]
+                 );
     }
 
     public function signMD5(array $paymentArr): string

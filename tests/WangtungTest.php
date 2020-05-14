@@ -30,7 +30,7 @@ class WantungTest extends TestCase
                                             'gateway' => [], 'ylpay' => ['scan'], 'jdpay' => ['scan']]];
         $actual = $this->payment->getConfig()->toArray();
         foreach ($expected as $key=>$val) {
-            if($key !== 'fields') {
+            if ($key !== 'fields') {
                 self::assertEquals($expected[$key], $actual[$key]);
             }
         }
@@ -40,7 +40,7 @@ class WantungTest extends TestCase
     {
         $json = '{"transdata":"%7B%22pay_type%22%3A%2210072%22%2C%22user_no%22%3A%22Neo%22%2C%22product_name%22%3A%22pidai%22%2C%22product_code%22%3A%22product-123%22%2C%22order_no%22%3A%221507704879000%22%2C%22order_time%22%3A%222017-10-12T12%3A22%3A05.452Z%22%2C%22order_amount%22%3A0.1%2C%22payment%22%3A%22%E6%94%AF%E4%BB%98%E6%88%90%E5%8A%9F%22%7D", "sign":"RLiujUr8AHm7V%2BNfPmdzkZgFuwiluyxJJNkso9nep3YY2wCO4lCh444Nk%2Fr1SxN2CxmpJ333DuaZfNPsBd647Q%2FYpH89fIYz3A07H7NE8EWN008FNBwDhBr6N3hyisJMNdwsJof7D3tCTtc28adOlC5k1naToseOP3x38H%2Fe5Vg%3D" }';
         $response = json_decode($json, true);
-        $paymentNotify = $this->payment->notify($this->setting,$response );
+        $paymentNotify = $this->payment->notify($this->setting, $response);
         self::assertEquals($paymentNotify->code, 200);
         self::assertNotEmpty($paymentNotify->orderNo);
         self::assertNotEmpty($paymentNotify->message);

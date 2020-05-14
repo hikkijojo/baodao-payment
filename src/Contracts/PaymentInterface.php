@@ -10,7 +10,7 @@ use Baodao\Payment\PaymentNotify;
 interface PaymentInterface
 {
     public function create(PaymentSetting $connection):PaymentCreation;
-    public function notify(PaymentSetting $connection,array $response ):PaymentNotify;
+    public function notify(PaymentSetting $connection, array $response):PaymentNotify;
     public function getBanks();
     public function getConfig():PaymentConfig;
 }

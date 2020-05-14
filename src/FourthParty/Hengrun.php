@@ -87,18 +87,28 @@ class Hengrun implements PaymentInterface
                              PaymentConfig::THIRD_PARTY_JDPAY, ])
             ->setFieldMerchant()
             ->setFieldMd5Key()
-            ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_ALIPAY,
-                                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5])
-            ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_WECHAT,
-                                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5])
-            ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_QQ,
-                                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5])
+            ->setFieldTradeCode(
+                PaymentConfig::THIRD_PARTY_ALIPAY,
+                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5]
+            )
+            ->setFieldTradeCode(
+                PaymentConfig::THIRD_PARTY_WECHAT,
+                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5]
+            )
+            ->setFieldTradeCode(
+                PaymentConfig::THIRD_PARTY_QQ,
+                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5]
+            )
             ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_GATEWAY, [])
-            ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_YLPAY,
-                                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5])
+            ->setFieldTradeCode(
+                PaymentConfig::THIRD_PARTY_YLPAY,
+                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5]
+            )
             ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_GATEWAY, [])
-            ->setFieldTradeCode(PaymentConfig::THIRD_PARTY_JDPAY,
-                                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5]);
+            ->setFieldTradeCode(
+                PaymentConfig::THIRD_PARTY_JDPAY,
+                [PaymentConfig::TRADE_SCAN, PaymentConfig::TRADE_H5]
+            );
 //        return [
 //            'cn_name'     => self::NAME,
 //            'en_name'     => strtolower(get_class()),

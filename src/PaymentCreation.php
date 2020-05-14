@@ -8,7 +8,7 @@ class PaymentCreation
     public $message;
     public $url;
     public $html;
-    public function __construct($code=null, $message=null,$url=null, $html=null)
+    public function __construct($code=null, $message=null, $url=null, $html=null)
     {
         $this->code = $code;
         $this->message =$message;
@@ -18,7 +18,7 @@ class PaymentCreation
     public function toArray():array
     {
         $arr = [];
-        foreach($this as $key=>$val) {
+        foreach ($this as $key=>$val) {
             $arr[$key]=$val;
         }
         return $arr;
