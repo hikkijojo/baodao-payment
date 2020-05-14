@@ -65,12 +65,13 @@ class AePay implements AgentInterface
         ]);
         $responseData = json_decode($response->getBody()->getContents(), true);
         if (self::RESPONSE_SUCCESS_CODE !== $responseData['success']) {
-            throw new Exception($responseData['msg'] ?? '');
+            throw new Exception($this->getSecure($responseData, 'msg'));
         }
         $result = new AgentOrder();
-        $result->orderNo = $responseData['order_no'] ?? '';
-        $result->agentOrderNo = $responseData['platform_orderid'] ?? '';
-        $result->amount = $responseData['order_money'] ?? '';
+        $responseData = $responseData['data'];
+        $result->orderNo = $this->getSecure($responseData, 'order_no');
+        $result->agentOrderNo = $this->getSecure($responseData, 'platform_orderid');
+        $result->amount = $this->getSecure($responseData, 'order_money');
 
         return $result;
     }
@@ -78,10 +79,10 @@ class AePay implements AgentInterface
     public function notifyResult(array $response): AgentNotify
     {
         $result = new AgentNotify();
-        $result->agentOrderNo = $response['platform_orderid'] ?? '';
-        $result->orderNo = $response['order_no'] ?? '';
-        $result->orderAmount = $response['order_money'] ?? '';
-        $status = $response['order_status'] ?? self::ORDER_STATUS_FAILED;
+        $result->agentOrderNo = $this->getSecure($response, 'platform_orderid');
+        $result->orderNo = $this->getSecure($response, 'order_no');
+        $result->orderAmount = $this->getSecure($response, 'order_money');
+        $status = isset($response['order_status']) ? $response['order_status'] : self::ORDER_STATUS_FAILED;
         $result->agentOrderStatus = $status;
         if ($status == self::ORDER_STATUS_SUCCESS) {
             $result->status = AgentNotify::STATUS_OK;
@@ -176,5 +177,9 @@ class AePay implements AgentInterface
         }
 
         return strtoupper(md5(sprintf('%s%s', $str, $md5Key)));
+    }
+    private function getSecure(array $arr, string $key)
+    {
+        return isset($arr[$key]) ? $arr[$key] : '';
     }
 }
