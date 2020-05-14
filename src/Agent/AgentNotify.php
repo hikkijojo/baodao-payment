@@ -11,5 +11,10 @@ class AgentNotify
     public $message = '';
     public $orderAmount;
     public $orderNo;
-    public $status;
+    public $status = self::STATUS_FAILED;
+
+    public function isSuccess():bool
+    {
+        return $this->status == self::STATUS_OK;
+    }
 }
