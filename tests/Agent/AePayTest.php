@@ -2,46 +2,50 @@
 
 namespace Baodao\Payment\Tests\Agent;
 
+use Baodao\Payment\Agent\AgentSetting;
 use Baodao\Payment\Agent\ThirdParty\AePay;
 use DateTime;
 use PHPUnit\Framework\TestCase;
 
 class AePayTest extends TestCase
 {
+    const MERCHANT_ID = 'AEMYUM5HB1';
+    const MD5_KEY = 'kG312HljR26bS4sJ772D4Y67WE';
+
+    private $setting;
+
     public function test_create_order()
     {
-        $order = [];
-
         $now = new DateTime();
-        $order['order_no']=  'order' . rand(0, 9) . $now->format('YmdHis');
-        $order['amount'] = 100.01;
-        $order['full_name'] = 'Tester';
-        $order['bank_card'] = '999999999999';
-
+        $this->setting->orderNo = 'order' . rand(0, 9) . $now->format('YmdHis');
+        $this->setting->orderAmount = 100.01;
+        $this->setting->payee = 'Tester';
+        $this->setting->bankCard = '999999999999';
+        $this->setting->notifyUrl = 'https://dev.33tech.cc/v1/third-party-payment';
         $aePay = new AePay();
-        $response = $aePay->createOrder($order, 'https://dev.33tech.cc/v1/third-party-payment');
-
-        fwrite(STDOUT, print_r($response, true));
-
-        self::assertNotEmpty($response['platform_orderid']);
-        self::assertEquals($response['order_no'], $order['order_no']);
-        $orderNo = $response['order_no'];
+        $agentOrder = $aePay->createOrder($this->setting);
+        fwrite(STDOUT, print_r($agentOrder, true));
+        self::assertNotEmpty($agentOrder->agentOrderNo);
+        self::assertEquals($agentOrder->orderNo, $this->setting->orderNo);
         sleep(5);
-        $response = $aePay->checkOrder($orderNo);
-
-        fwrite(STDOUT, print_r($response, true));
-
-        self::assertIsNumeric($response['order_status']);
+        $agentNotify = $aePay->checkOrder($this->setting, $agentOrder->orderNo);
+        fwrite(STDOUT, print_r($agentOrder, true));
+        self::assertIsNumeric($agentNotify->status);
     }
 
     public function test_get_balance()
     {
         $aePay = new AePay();
-        $response = $aePay->getBalance();
-
+        $response = $aePay->getBalance($this->setting);
         fwrite(STDOUT, print_r($response, true));
-
         self::assertIsNumeric($response['balance']);
         self::assertIsNumeric($response['lockbalance']);
+    }
+
+    protected function setUp(): void
+    {
+        $this->setting = new AgentSetting();
+        $this->setting->merchantNo = self::MERCHANT_ID;
+        $this->setting->md5Key = self::MD5_KEY;
     }
 }
