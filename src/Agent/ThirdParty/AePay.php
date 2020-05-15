@@ -90,9 +90,9 @@ class AePay implements AgentInterface
         $status = isset($response['order_status']) ? $response['order_status'] : self::ORDER_STATUS_FAILED;
         $result->agentOrderStatus = $status;
         if ($status == self::ORDER_STATUS_SUCCESS) {
-            $result->status = AgentNotify::STATUS_OK;
+            $result->setStatusOK();
         } elseif ($status == self::ORDER_STATUS_FAILED) {
-            $result->status = AgentNotify::STATUS_FAILED;
+            $result->setFailedMessage($this->getSecure($response, 'msg'));
         }
 
         return $result;
