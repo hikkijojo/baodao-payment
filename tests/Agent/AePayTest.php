@@ -2,6 +2,7 @@
 
 namespace Baodao\Payment\Tests\Agent;
 
+use Baodao\Payment\Agent\AgentOrder;
 use Baodao\Payment\Agent\AgentSetting;
 use Baodao\Payment\Agent\ThirdParty\AePay;
 use DateTime;
@@ -25,12 +26,17 @@ class AePayTest extends TestCase
         $aePay = new AePay();
         $agentOrder = $aePay->createOrder($this->setting);
         fwrite(STDOUT, print_r($agentOrder, true));
-        self::assertNotEmpty($agentOrder->agentOrderNo);
-        self::assertEquals($agentOrder->orderNo, $this->setting->orderNo);
-        sleep(5);
-        $agentNotify = $aePay->checkOrder($this->setting, $agentOrder->orderNo);
-        fwrite(STDOUT, print_r($agentOrder, true));
-        self::assertIsNumeric($agentNotify->status);
+        if ($agentOrder->isSuccessCreated()) {
+            sleep(5);
+            $agentNotify = $aePay->checkOrder($this->setting, $agentOrder->orderNo);
+            fwrite(STDOUT, print_r($agentNotify, true));
+            self::assertNotEmpty($agentOrder->agentOrderNo);
+            self::assertEquals($agentOrder->orderNo, $this->setting->orderNo);
+            self::assertIsNumeric($agentNotify->status);
+        } else {
+            self::assertIsString($agentOrder->getFailedMessage());
+            self::assertNotEmpty($agentOrder->getFailedMessage());
+        }
     }
 
     public function test_get_balance()

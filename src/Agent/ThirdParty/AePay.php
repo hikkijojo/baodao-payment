@@ -40,7 +40,9 @@ class AePay implements AgentInterface
     {
         $amount = $setting->orderAmount;
         if ($amount < 100 || $amount > 100000) {
-            throw new Exception("amount $amount is not in [100, 100000]");
+            $result = new AgentOrder();
+            $result->setFailedMessage('金额需要在 100 到 100000 之间');
+            return $result;
         }
 
         // post data
@@ -64,11 +66,14 @@ class AePay implements AgentInterface
             'form_params' => $postData,
         ]);
         $responseData = json_decode($response->getBody()->getContents(), true);
-        if (self::RESPONSE_SUCCESS_CODE !== $responseData['success']) {
-            throw new Exception($this->getSecure($responseData, 'msg'));
-        }
+
         $result = new AgentOrder();
+        if (self::RESPONSE_SUCCESS_CODE !== $responseData['success']) {
+            $result->setFailedMessage($this->getSecure($responseData, 'msg'));
+            return $result;
+        }
         $responseData = $responseData['data'];
+        $result->setStatusOK();
         $result->orderNo = $this->getSecure($responseData, 'order_no');
         $result->agentOrderNo = $this->getSecure($responseData, 'platform_orderid');
         $result->amount = $this->getSecure($responseData, 'order_money');
