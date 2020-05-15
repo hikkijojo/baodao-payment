@@ -11,4 +11,6 @@ interface AgentInterface
     public function createOrder(AgentSetting $connection): AgentOrder;
 
     public function notifyResult(array $response): AgentNotify;
+
+    public function prepareFailedNotify(): array;
 }
