@@ -42,9 +42,9 @@ class AePay implements AgentInterface
         if ($amount < 100 || $amount > 100000) {
             $result = new AgentOrder();
             $result->setFailedMessage('金额需要在 100 到 100000 之间');
+
             return $result;
         }
-
         // post data
         $postData['merchant_id'] = $setting->merchantNo;
         $postData['order_no'] = $setting->orderNo;
@@ -66,10 +66,10 @@ class AePay implements AgentInterface
             'form_params' => $postData,
         ]);
         $responseData = json_decode($response->getBody()->getContents(), true);
-
         $result = new AgentOrder();
         if (self::RESPONSE_SUCCESS_CODE !== $responseData['success']) {
             $result->setFailedMessage($this->getSecure($responseData, 'msg'));
+
             return $result;
         }
         $responseData = $responseData['data'];
@@ -96,6 +96,11 @@ class AePay implements AgentInterface
         }
 
         return $result;
+    }
+
+    public function prepareFailedNotify(): array
+    {
+        return ['order_status' => self::ORDER_STATUS_FAILED];
     }
 
     public function checkOrder(AgentSetting $setting, $orderNo): AgentNotify
@@ -183,6 +188,7 @@ class AePay implements AgentInterface
 
         return strtoupper(md5(sprintf('%s%s', $str, $md5Key)));
     }
+
     private function getSecure(array $arr, string $key)
     {
         return isset($arr[$key]) ? $arr[$key] : '';
