@@ -23,4 +23,6 @@ interface AgentInterface
      * @return AgentNotify
      */
     public function notifyResult(AgentSetting $setting, array $response): AgentNotify;
+
+    public function checkOrder(AgentSetting $setting, string $orderNo): AgentNotify;
 }
