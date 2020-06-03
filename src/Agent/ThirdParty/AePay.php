@@ -60,7 +60,7 @@ class AePay implements AgentInterface
         // signature
         $postData['signature'] = $this->getSignature($postData, $setting->md5Key);
         // other params
-        //$postData['otherparams'] = json_encode(['test' => 'test']);
+        $postData['otherparams'] = $setting->otherParams;
         // response
         $response = $this->client->post(self::HOST . 'dfapi/make_order', [
             'form_params' => $postData,

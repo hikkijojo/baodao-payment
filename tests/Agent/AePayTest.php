@@ -22,7 +22,8 @@ class AePayTest extends TestCase
         $this->setting->orderAmount = 100.01;
         $this->setting->payee = 'Tester';
         $this->setting->bankCard = '999999999999';
-        $this->setting->notifyUrl = 'https://dev.33tech.cc/v1/third-party-payment';
+        $this->setting->notifyUrl = 'https://dev-admin.33tech.cc/v1/third-party-payment/1/orderNo';
+        $this->setting->otherParams = md5($this->setting->orderNo.$this->setting->payee.$this->setting->bankCard);
         $aePay = new AePay();
         $agentOrder = $aePay->createOrder($this->setting);
         fwrite(STDOUT, print_r($agentOrder, true));
@@ -32,8 +33,9 @@ class AePayTest extends TestCase
             fwrite(STDOUT, print_r($agentNotify, true));
             self::assertNotEmpty($agentOrder->agentOrderNo);
             self::assertEquals($agentOrder->orderNo, $this->setting->orderNo);
-            self::assertIsNumeric($agentNotify->status);
+            self::assertEquals($agentOrder->amount, $this->setting->orderAmount);
         } else {
+            self::assertFalse($agentOrder->isSuccessCreated());
             self::assertIsString($agentOrder->getFailedMessage());
             self::assertNotEmpty($agentOrder->getFailedMessage());
         }
