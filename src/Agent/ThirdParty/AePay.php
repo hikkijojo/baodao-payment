@@ -81,7 +81,7 @@ class AePay implements AgentInterface
         return $result;
     }
 
-    public function notifyResult(array $response): AgentNotify
+    public function notifyResult(AgentSetting $setting, array $response): AgentNotify
     {
         $result = new AgentNotify();
         $result->agentOrderNo = $this->getSecure($response, 'platform_orderid');
@@ -90,12 +90,21 @@ class AePay implements AgentInterface
         $result->callbackAuth = $this->getSecure($response, 'otherparams');
         $status = isset($response['order_status']) ? $response['order_status'] : self::ORDER_STATUS_FAILED;
         $result->agentOrderStatus = $status;
+
+        $data = $response;
+        if (isset($data['otherparams'])) {
+            unset($data['otherparams']);
+        }
+        if (false === $this->checkSignature($data, $setting->md5Key)) {
+            $result->setFailedMessage('签名验证失败');
+            return $result;
+        }
+
         if ($status == self::ORDER_STATUS_SUCCESS) {
             $result->setStatusOK();
         } elseif ($status == self::ORDER_STATUS_FAILED) {
             $result->setFailedMessage($this->getSecure($response, 'msg'));
         }
-
         return $result;
     }
 
@@ -120,14 +129,22 @@ class AePay implements AgentInterface
             'form_params' => $postData,
         ]);
         $responseData = json_decode($response->getBody()->getContents(), true);
+        $result = new AgentNotify();
+
         if (self::RESPONSE_SUCCESS_CODE !== $responseData['success']) {
-            return $responseData;
+            $result->setFailedMessage('失敗 code '. $responseData['success']);
+            return $result;
         }
-        if (!$this->checkSignature($responseData['data'], $setting->md5Key)) {
-            return sprintf('check signature fail. (%s)', var_export($responseData, true));
+        $response = $responseData['data'];
+
+        if (!$this->checkSignature($response, $setting->md5Key)) {
+            $result->setFailedMessage('签名验证失败');
         }
 
-        return $this->notifyResult($responseData['data']);
+        $result->agentOrderNo = $response['platform_orderid'];
+        $result->agentOrderStatus = $response['order_status'];
+        $result->orderNo = $response['order_no'];
+        return $result;
     }
 
     public function getBalance(AgentSetting $setting)
