@@ -11,7 +11,6 @@ class AgentNotify
     private $failedMsg = '';
     public $orderAmount;
     public $orderNo;
-    public $callbackAuth;
     private $status = self::STATUS_FAILED;
 
     public function isSuccess():bool

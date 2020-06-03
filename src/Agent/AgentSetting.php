@@ -17,8 +17,6 @@ class AgentSetting
     public $notifyUrl;         // 異步通知回調網址 Must
     public $payee;
 
-    public $callbackAuth;      // 原樣返回的參數，通常不參與 Singature
-
     public function __construct(array $fields = [])
     {
         $this->setProperties($fields);
