@@ -60,7 +60,7 @@ class AePay implements AgentInterface
         // signature
         $postData['signature'] = $this->getSignature($postData, $setting->md5Key);
         // other params
-        $postData['otherparams'] = $setting->callBackAuth;
+        $postData['otherparams'] = $setting->callbackAuth;
         // response
         $response = $this->client->post(self::HOST . 'dfapi/make_order', [
             'form_params' => $postData,
@@ -87,6 +87,7 @@ class AePay implements AgentInterface
         $result->agentOrderNo = $this->getSecure($response, 'platform_orderid');
         $result->orderNo = $this->getSecure($response, 'order_no');
         $result->orderAmount = $this->getSecure($response, 'order_money');
+        $result->callbackAuth = $this->getSecure($response, 'otherparams');
         $status = isset($response['order_status']) ? $response['order_status'] : self::ORDER_STATUS_FAILED;
         $result->agentOrderStatus = $status;
         if ($status == self::ORDER_STATUS_SUCCESS) {
@@ -101,7 +102,7 @@ class AePay implements AgentInterface
     public function prepareFailedNotify(AgentSetting $setting): array
     {
         return ['order_status' => self::ORDER_STATUS_FAILED,
-                'otherparams' => $setting->callBackAuth];
+                'otherparams' => $setting->callbackAuth];
     }
 
     public function checkOrder(AgentSetting $setting, $orderNo): AgentNotify
