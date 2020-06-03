@@ -10,11 +10,14 @@ class AgentSetting
     public $bankCard;          //md5 加密 key, Must
     public $md5Key;            // 訂單號 Must
     public $merchantNo;        // 訂單金額 單位 元 Must
-    public $notifyUrl;         // 訂單日期 格式 DateTime Must
     public $orderAmount;       // 收款人名稱
     public $orderNo;           // 收款人卡號
-    public $orderTime;         // 異步通知回調網址 Must
+    public $orderTime;         // 訂單日期 格式 DateTime Must
+
+    public $notifyUrl;         // 異步通知回調網址 Must
     public $payee;
+
+    public $otherParams;      // 原樣返回的參數，通常不參與 Singature
 
     public function __construct(array $fields = [])
     {
