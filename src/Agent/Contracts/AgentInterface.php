@@ -16,11 +16,13 @@ interface AgentInterface
     public function createOrder(AgentSetting $setting): AgentOrder;
 
     /**
-     * @param array $response
+     * @param AgentSetting $setting
+     * @param array        $response
      * 接收處理三方代付付款回調
+     *
      * @return AgentNotify
      */
-    public function notifyResult(array $response): AgentNotify;
+    public function notifyResult(AgentSetting $setting, array $response): AgentNotify;
 
     /**
      * @param AgentSetting $setting
