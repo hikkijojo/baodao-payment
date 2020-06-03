@@ -110,7 +110,7 @@ class AePay implements AgentInterface
         return $result;
     }
 
-    public function checkOrder(AgentSetting $setting, $orderNo): AgentNotify
+    public function checkOrder(AgentSetting $setting, string $orderNo): AgentNotify
     {
         // post data
         $postData['merchant_id'] = $setting->merchantNo;
