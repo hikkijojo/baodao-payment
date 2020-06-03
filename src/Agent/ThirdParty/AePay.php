@@ -95,6 +95,9 @@ class AePay implements AgentInterface
         if (isset($data['otherparams'])) {
             unset($data['otherparams']);
         }
+        if (isset($data['msg'])) {
+            unset($data['msg']);
+        }
         if (false === $this->checkSignature($data, $setting->md5Key)) {
             $result->setFailedMessage('签名验证失败');
             return $result;
@@ -204,7 +207,6 @@ class AePay implements AgentInterface
         foreach ($data as $key => $val) {
             $str .= sprintf('%s%s', $key, $val);
         }
-
         return strtoupper(md5(sprintf('%s%s', $str, $md5Key)));
     }
 
