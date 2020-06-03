@@ -18,16 +18,9 @@ interface AgentInterface
     /**
      * @param AgentSetting $setting
      * @param array        $response
-     * 接收處理三方代付付款回調
+     * 接收處理三方代付付款回調，驗證 Signature
      *
      * @return AgentNotify
      */
     public function notifyResult(AgentSetting $setting, array $response): AgentNotify;
-
-    /**
-     * @param AgentSetting $setting
-     * 提供假的回調，讓我們自己處理 三方間單失敗，不提供回調的流程
-     * @return array
-     */
-    public function prepareFailedNotify(AgentSetting $setting): array;
 }

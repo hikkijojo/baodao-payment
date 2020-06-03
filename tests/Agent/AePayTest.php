@@ -22,7 +22,6 @@ class AePayTest extends TestCase
         $this->setting->payee = 'Tester';
         $this->setting->bankCard = '999999999999';
         $this->setting->notifyUrl = 'https://dev-admin.33tech.cc/v1/third-party-payment/1/orderNo';
-        $this->setting->callbackAuth = md5($this->setting->orderNo . $this->setting->payee . $this->setting->bankCard);
         $aePay = new AePay();
         $agentOrder = $aePay->createOrder($this->setting);
         fwrite(STDOUT, print_r($agentOrder, true));
